@@ -1,3 +1,4 @@
+import java.util.*;
 
 public class Iterator<T> implements IteratorInterface<T> {
 	private final Iterator<Iterator<T>> link;
@@ -5,7 +6,7 @@ public class Iterator<T> implements IteratorInterface<T> {
     private Iterator<T> last;
     
     public Iterator(Iterable<Iterator<T>> iterable)  {
-        this(iterable.iterator());
+        this((Iterator<Iterator<T>>) iterable.iterator());
     }
     public Iterator(Iterator<Iterator<T>> iterator)  {
         this.link = iterator;
@@ -22,21 +23,20 @@ public class Iterator<T> implements IteratorInterface<T> {
 
 	@Override
 	public T next() {
-		while(current != null)
-		{
-			current = last;			
-		}
-		return current.next();
+		if (!this.hasNext()) {
+            this.last = null;         // to disallow remove()
+            throw new NoSuchElementException();
+        }
+        this.last = current;  // to support remove()
+        return current.next();
 	}
 
 	@Override
 	public void remove() {
-		Iterator<T> temp = current;
-		while(temp.next() != null)
-		{
-				temp = null;
-				temp = current.next();
-		}
+		if (this.last == null) {
+            throw new IllegalStateException();
+        }
+        this.last.remove();
 	}
 
 }
